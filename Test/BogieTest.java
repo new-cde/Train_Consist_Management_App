@@ -1,76 +1,44 @@
 import org.junit.jupiter.api.Test;
-import java.util.*;
+import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BogieTest {
 
-    List<Bogie> createBogies() {
-        return Arrays.asList(
-                new Bogie("Sleeper", 72),
-                new Bogie("AC Chair", 56),
-                new Bogie("First Class", 24),
-                new Bogie("General", 120)
-        );
+    Pattern trainPattern = Pattern.compile("TRN-\\d{4}");
+    Pattern cargoPattern = Pattern.compile("PET-[A-Z]{2}");
+
+    // 1. Valid Train ID
+    @Test
+    void testRegex_ValidTrainID() {
+        assertTrue(trainPattern.matcher("TRN-1234").matches());
     }
 
-    // 1. Total calculation
+    // 2. Invalid Train ID
     @Test
-    void testReduce_TotalSeatCalculation() {
-        List<Bogie> bogies = createBogies();
-
-        int total = bogies.stream()
-                .map(b -> b.capacity)
-                .reduce(0, Integer::sum);
-
-        assertEquals(272, total);
+    void testRegex_InvalidTrainIDFormat() {
+        assertFalse(trainPattern.matcher("TRAIN12").matches());
+        assertFalse(trainPattern.matcher("TRN12A").matches());
+        assertFalse(trainPattern.matcher("1234-TRN").matches());
     }
 
-    // 2. Multiple bogies aggregation
+    // 3. Valid Cargo Code
     @Test
-    void testReduce_MultipleBogiesAggregation() {
-        List<Bogie> bogies = createBogies();
-
-        int total = bogies.stream()
-                .map(b -> b.capacity)
-                .reduce(0, Integer::sum);
-
-        assertTrue(total > 0);
+    void testRegex_ValidCargoCode() {
+        assertTrue(cargoPattern.matcher("PET-AB").matches());
     }
 
-    // 3. Single bogie
+    // 4. Invalid Cargo Code
     @Test
-    void testReduce_SingleBogieCapacity() {
-        List<Bogie> bogies = List.of(new Bogie("Sleeper", 72));
-
-        int total = bogies.stream()
-                .map(b -> b.capacity)
-                .reduce(0, Integer::sum);
-
-        assertEquals(72, total);
+    void testRegex_InvalidCargoCodeFormat() {
+        assertFalse(cargoPattern.matcher("PET-ab").matches());
+        assertFalse(cargoPattern.matcher("PET123").matches());
+        assertFalse(cargoPattern.matcher("AB-PET").matches());
     }
 
-    // 4. Empty list
+    // 5. Digit length validation
     @Test
-    void testReduce_EmptyBogieList() {
-        List<Bogie> bogies = new ArrayList<>();
-
-        int total = bogies.stream()
-                .map(b -> b.capacity)
-                .reduce(0, Integer::sum);
-
-        assertEquals(0, total);
-    }
-
-    // 5. Original list unchanged
-    @Test
-    void testReduce_OriginalListUnchanged() {
-        List<Bogie> bogies = createBogies();
-        int originalSize = bogies.size();
-
-        bogies.stream()
-                .map(b -> b.capacity)
-                .reduce(0, Integer::sum);
-
-        assertEquals(originalSize, bogies.size());
+    void testRegex_TrainIDDigitLengthValidation() {
+        assertFalse(trainPattern.matcher("TRN-123").matches());
+        assertFalse(trainPattern.matcher("TRN-12345").matches());
     }
 }
